@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-//giving compilation error on uri but working on my compilers...
+//now compiles, but time limit exceeded all the time
 
 #define N 10000
 
@@ -8,7 +8,8 @@
 #define false 0
 
 void initArray(int *array, int n){
-  for(int i = 0; i < n; i++) {
+  int i;
+  for(i = 0; i < n; i++) {
     array[i] = i+1;
   }
 }
@@ -25,7 +26,8 @@ void next(int *array, int k, int *j, int original_n){
 }
 
 int findLast(int *array, int original_n) {
-  for(int i = 0; i < original_n; i++){
+  int i;
+  for(i = 0; i < original_n; i++){
     if(array[i] != -1) return array[i];
   }
 
@@ -38,11 +40,11 @@ int main() {
   scanf("%d", &NC);
 
   int i = 0; int original_n;
+  int people[N];
   for(i = 0; i < NC; i++) {
     int n, k;
     scanf("%d %d", &n, &k);
     original_n = n;
-    int people[N];
     initArray(people, original_n);
 
     int j = k-1;
