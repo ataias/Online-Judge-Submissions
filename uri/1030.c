@@ -1,89 +1,57 @@
 #include <stdio.h>
-#include <stdlib.h>
+
+//giving compilation error on uri but working on my compilers...
+
+#define N 10000
 
 #define true 1
 #define false 0
 
-typedef struct boolean {
-  int x;
-} bool;
-
-struct node {
-  int x;
-  struct node *next;
-  bool is_deleted;
-};
-
-// void printList(struct node *root) {
-//
-// }
-
-struct node* addAfter(struct node *root, int x) {
-  struct node *newNode = (struct node *) malloc( sizeof(struct node) );
-  newNode->x = x;
-  newNode->next = NULL;
-  root->next = newNode;
-
-  return newNode;
+void initArray(int *array, int n){
+  for(int i = 0; i < n; i++) {
+    array[i] = i+1;
+  }
 }
 
-//does not consider case when list doesn't have item!
-struct node* find(struct node *root, int x) {
-  while(true) {
-    if (x == root->x) return root;
-    else root = root->next;
+void next(int *array, int k, int *j, int original_n){
+  array[*j] = -1;
+  while(k > 0) {
+    *j = (*j + 1) % original_n;
+    if (array[*j] != -1) {
+      k--;
+    }
   }
 
-
 }
 
-void deleteAfter(struct node *root) {
-  struct node *deleted = root->next;
-  root->next = deleted->next;
-  free(deleted);
+int findLast(int *array, int original_n) {
+  for(int i = 0; i < original_n; i++){
+    if(array[i] != -1) return array[i];
+  }
+
+  return -1;
 }
+
 
 int main() {
   int NC;
   scanf("%d", &NC);
 
-  int i = 0;
+  int i = 0; int original_n;
   for(i = 0; i < NC; i++) {
     int n, k;
     scanf("%d %d", &n, &k);
+    original_n = n;
+    int people[N];
+    initArray(people, original_n);
 
-    //Creating list of itens
-    struct node *root;
-    root = (struct node *) malloc( sizeof(struct node) );
-    root->x = 1;
-    root->next = NULL;
-    root->is_deleted.x = false;
+    int j = k-1;
+    while(n > 1) {
+      next(people, k, &j, original_n);
+      n--;
 
-    struct node *aNode = NULL;
-    for(int j = 2; j <= n; j++) {
-      if(j==2) {
-        aNode = addAfter(root, j);
-      } else {
-        addAfter(aNode, j);
-      }
-      printf("j = %d\n", j);
     }
-    aNode->next = root;
-
-    //starting simulation
-    root = find(root, k);
-
-    while(root->next != NULL) {
-      for(int j = 0; j < k - 1; j++) {
-        root = root->next;
-        printf("Iteration %d\n", j);
-      }
-
-      deleteAfter(root->next);
-    }
-
-    printf("%d\n", root->x);
-    free(root);
+    printf("Case %d: %d\n", i+1, findLast(people, original_n));
 
   }
 
