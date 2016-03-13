@@ -5,9 +5,11 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+#include <map>
 using namespace std;
 
-//it is not working yet... I get Time Limit Exceeded
+
+//It is working! Time limit exceeded was solved using "map" to store values already computed
 
 // $ ./a.out
 // 2
@@ -17,7 +19,7 @@ using namespace std;
 // 1384248
 
 void printSet(set<unsigned> s) {
-  for(auto it = begin(s); it != end(s); ++it)
+  for(auto it = std::begin(s); it != std::end(s); ++it)
     cout << *it << " ";
   cout << endl;
 }
@@ -38,7 +40,7 @@ void getFactor(vector<tuple<unsigned,unsigned>> *primeTuples, set<unsigned> *div
 bool isPrime(unsigned n, set<unsigned> *primes){
   if (n == 2) return true;
 
-  for(auto it = begin(*primes); it != end(*primes); ++it){
+  for(auto it = std::begin(*primes); it != std::end(*primes); ++it){
     if (*it > sqrt(n) + 1) break;
     if(n % *it == 0) return false;
   }
@@ -49,6 +51,10 @@ bool isPrime(unsigned n, set<unsigned> *primes){
 int main() {
   unsigned cases = 0;
   cin >> cases;
+
+  //Dynamic programming: saving last results
+  std::map<unsigned, unsigned> valueToSum;
+
 
   //Get primes up to 1000
   set<unsigned> primes;
@@ -68,6 +74,16 @@ int main() {
   for(unsigned i = 0; i < cases; i++){
     unsigned long number, copyNumber, sum;
     cin >> number;
+
+    //verify if solved before
+    try {
+      sum = valueToSum.at(number);
+      cout << sum << endl;
+      continue;
+    } catch(const std::out_of_range& e) {
+
+    }
+
     copyNumber = number;
 
     auto search = primes.find(number);
@@ -77,8 +93,8 @@ int main() {
     }
 
     //This gives all the prime factors
-    for (auto it = begin(primes); it!=end(primes); ++it){
-      if (*it > number) break;
+    for (auto it = std::begin(primes); it!=std::end(primes); ++it){
+      if (*it > copyNumber) break;
 
       while(true)
         if(copyNumber % *it == 0) {
@@ -94,7 +110,7 @@ int main() {
     unsigned m = 0;
     while(m < primeFactors.size()) {
         unsigned v = primeFactors.at(m);
-        unsigned n = count(begin(primeFactors), end(primeFactors), v);
+        unsigned n = count(std::begin(primeFactors), std::end(primeFactors), v);
         auto t = make_tuple(v,n);
         primeTuples.push_back(t);
         m += n;
@@ -102,12 +118,14 @@ int main() {
 
     getFactor(&primeTuples, &divisors, 0, 1);
 
-    sum = accumulate(begin(divisors), end(divisors), 0);
+    sum = accumulate(std::begin(divisors), std::end(divisors), 0);
 
     if(number == 0) sum = 0;
 
     sum = sum - number; //number was added in the process above
     cout << sum << endl;
+
+    valueToSum[number] = sum;
 
     // //important! clear before next number
     divisors.clear();
