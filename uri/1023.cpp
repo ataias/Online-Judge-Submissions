@@ -1,23 +1,14 @@
 #include <iostream>
-#include <vector>
-#include <tuple>
 #include <cstdio>
 #include <cstdlib>
 #include <map>
+#include <cmath>
 
 using namespace std;
 
-ostream& operator<<(ostream& os, const std::vector<std::tuple<int, int>>& v) {
-  for(auto it = v.begin(); it != v.end(); ++it) {
-    os << get<0>(*it) << "-" << get<1>(*it);
-    if(it != v.end()) os << " ";
-  }
-  return os;
-}
-
 int main() {
 
-  vector<tuple<int, int>> person_consume;
+  map<int,int> person_consume;
 
   int i = 0;
   while(true) {
@@ -26,27 +17,26 @@ int main() {
     cin >> N;
     if (N == 0) break;
 
-    double persons, cubic_meters;
+    double persons = 0, cubic_meters = 0;
     for(int i = 0; i < N; i++) {
       cin >> X >> Y;
-      person_consume.push_back(make_tuple(X, Y/X));
+      // person_consume.push_back(make_tuple(X, Y/X));
+      try {
+        person_consume[Y/X] += X;
+      } catch (const std::out_of_range& e) {
+        person_consume[Y/X] = X;
+      }
       persons += X;
       cubic_meters += Y;
     }
 
-    //Sort person_consume
-    //do not use "&person_consume" with an stl vector. Use .data instead
-    qsort(person_consume.data(), person_consume.size(), sizeof &person_consume,
-      [](const void* a, const void* b){
-        auto arg1 = get<1>(*static_cast<const tuple<int,int>*>(a));
-        auto arg2 = get<1>(*static_cast<const tuple<int,int>*>(b));
-        return (arg1 > arg2) - (arg1 < arg2);
-    });
-
     if (i > 1) cout << endl;
     cout << "Cidade# " << i << ":" << endl;
-    cout << person_consume << endl;
-    printf("Consumo medio: %.2f m3.\n", cubic_meters/persons);
+    for (auto it = person_consume.cbegin(); it != person_consume.cend(); ++it) {
+      cout << it->second << "-" << it->first;
+      cout << ((it != (--person_consume.cend())) ? " " : "\n"); //detect if it is last iteration
+    }
+    printf("Consumo medio: %.2f m3.\n", floorf(cubic_meters*100/persons)/ 100) ;
 
 
     person_consume.clear();
