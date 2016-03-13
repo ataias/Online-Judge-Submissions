@@ -1,7 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <tuple>
 #include <set>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
 using namespace std;
+
+//it is not working yet... I get Time Limit Exceeded
 
 // $ ./a.out
 // 2
@@ -10,39 +16,65 @@ using namespace std;
 // 600000
 // 1384248
 
-bool isPrime(int n){
-  for(int i = 2; i < n; i++){
-    if(n % i == 0) return false;
+void printSet(set<unsigned> s) {
+  for(auto it = begin(s); it != end(s); ++it)
+    cout << *it << " ";
+  cout << endl;
+}
+
+void getFactor(vector<tuple<unsigned,unsigned>> *primeTuples, set<unsigned> *divisors, unsigned start, unsigned acc) {
+  if(primeTuples->size() <= start){
+    (*divisors).insert(acc);
+    return;
+  }
+
+  auto element = primeTuples->at(start);
+  for(unsigned i = 0; i <= get<1>(element); i++) {
+    getFactor(primeTuples, divisors, start + 1, acc*pow(get<0>(element), i));
+  }
+
+}
+
+bool isPrime(unsigned n, set<unsigned> *primes){
+  if (n == 2) return true;
+
+  for(auto it = begin(*primes); it != end(*primes); ++it){
+    if (*it > sqrt(n) + 1) break;
+    if(n % *it == 0) return false;
   }
 
   return true;
 }
 
 int main() {
-  int cases = 0;
+  unsigned cases = 0;
   cin >> cases;
 
   //Get primes up to 1000
-  vector<int> primes;
-  int sqrt1000000 = 1000;
-  for(int i = 2; i < sqrt1000000; i++) {
-    if(isPrime(i))
-      primes.push_back(i);
-  }
+  set<unsigned> primes;
+  unsigned sqrtV = 500000;
+  for(unsigned i = 2; i < sqrtV; i++)
+    if(isPrime(i, &primes)){
+      primes.insert(i);
+      // cout << "Added: " << i << endl;
+    }
 
-  // for(int i = 0; i < primes.size(); i++){
-  //   cout << primes.at(i) << endl;
-  // }
+  // cout << "primes: " << endl;
+  // printSet(primes);
 
-  // cout << primes.size() << endl;
+  vector<unsigned> primeFactors;
+  set<unsigned> divisors;
 
-  vector<int> primeFactors;
-  set<int> divisors;
-
-  for(int i = 0; i < cases; i++){
-    unsigned number, copyNumber;
+  for(unsigned i = 0; i < cases; i++){
+    unsigned long number, copyNumber, sum;
     cin >> number;
     copyNumber = number;
+
+    auto search = primes.find(number);
+    if(search != primes.end()) {
+      cout << 1 << endl;
+      continue;
+    }
 
     //This gives all the prime factors
     for (auto it = begin(primes); it!=end(primes); ++it){
@@ -57,28 +89,27 @@ int main() {
         }
     }
 
-    if(number > 1) divisors.insert(1);
-
-    //this should give me all the divisors (broken so far)
-    for (int j = 0; j < primeFactors.size(); j++) {
-      divisors.insert(primeFactors.at(j));
-      unsigned divisor = primeFactors.at(j);
-
-      for (int k = j + 1; k < primeFactors.size(); k++) {
-        divisor *= primeFactors.at(k);
-        divisors.insert(divisor);
-      }
+    //Get a vector of tuples
+    vector<tuple<unsigned, unsigned>> primeTuples;
+    unsigned m = 0;
+    while(m < primeFactors.size()) {
+        unsigned v = primeFactors.at(m);
+        unsigned n = count(begin(primeFactors), end(primeFactors), v);
+        auto t = make_tuple(v,n);
+        primeTuples.push_back(t);
+        m += n;
     }
 
-    unsigned long sum = 0;
-    for(auto it = begin(divisors); it!=end(divisors); ++it){
-      cout << *it << " ";
-      sum += *it;
-    }
-    cout << endl;
+    getFactor(&primeTuples, &divisors, 0, 1);
+
+    sum = accumulate(begin(divisors), end(divisors), 0);
+
+    if(number == 0) sum = 0;
+
     sum = sum - number; //number was added in the process above
     cout << sum << endl;
-    //important! clear before next number
+
+    // //important! clear before next number
     divisors.clear();
     primeFactors.clear();
   }
